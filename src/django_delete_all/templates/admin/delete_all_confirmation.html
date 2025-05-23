@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block title %}{{ title }} | {{ site_title|default:"Django site admin" }}{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="module">
+    <p>Are you sure you want to delete ALL {{ object_count }} {{ object_name }}{% if object_count != 1 %}s{% endif %}?</p>
+
+    {% if object_count > 0 %}
+        <div class="module aligned">
+            <h2>⚠️ Warning</h2>
+            <p class="errornote">
+                This will permanently delete {{ object_count }} objects and cannot be undone!
+            </p>
+            {% if is_large_deletion %}
+            <p class="errornote">
+                <strong>LARGE DELETION DETECTED:</strong> You are about to delete {{ object_count }} objects.
+                This operation may take a long time and could impact database performance.
+            </p>
+            {% endif %}
+        </div>
+
+        {% if safety_info %}
+        <div class="module aligned">
+            <h3>Safety Information</h3>
+            <ul>
+                <li>Maximum objects without extra confirmation: {{ safety_info.max_without_confirmation }}</li>
+                <li>Objects to be deleted: {{ object_count }}</li>
+                {% if safety_info.requires_confirmation %}
+                <li><strong>⚠️ This deletion requires explicit confirmation due to the number of objects.</strong></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in queryset %}
+                <input type="hidden" name="_selected_action" value="{{ field.pk }}" />
+            {% endfor %}
+            <input type="hidden" name="action" value="delete_all_action" />
+            <input type="hidden" name="post" value="yes" />
+            <div class="submit-row">
+                <input type="submit" value="Yes, delete all {{ object_count }} objects" class="default" />
+                <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_changelist' %}" class="button cancel-link">No, take me back</a>
+            </div>
+        </form>
+    {% else %}
+        <p>There are no objects to delete.</p>
+        <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_changelist' %}" class="button">Back to list</a>
+    {% endif %}
+</div>
+{% endblock %}

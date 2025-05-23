@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include MANIFEST.in
+recursive-include src/django_delete_all/templates *
+recursive-include src/django_delete_all/static *
+global-exclude __pycache__
+global-exclude *.py[co]
